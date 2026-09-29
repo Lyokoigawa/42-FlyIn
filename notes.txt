@@ -1,0 +1,32 @@
+re.compile(r"\[([^]]*)]") -> this means "anything inside square brackets []"
+re.compile(r"^[A-Za-z0-9_]+$") -> this means "anything with alphanumeric digits or underscores"
+
+a FlyIn parser class with:
+
+an init that takes a passed string for the filepath
+
+parsing method that beings parsing
+- tries to open filepath with utf-8 encoding as f
+- saves lines using f.readlines() for the lines
+- excepts a buncha shit if something goes wrong
+
+- for loop that checks each line that isn't empty
+- - skips blank comments with startswith() 
+- - just uses startswith() for a lotta relevant shit
+- - raises error if line doesn't follow either nb_drones, connections or the other hubs
+
+- raises error if the resulting outcome of the for loop is empty
+- validates graph
+
+helper methods to parse the different parts of the file itself (connections, hubs and nb_drones)
+- each helper function returns an object of their class (Hub-class object for hubs, Connection-class object for connections, etc etc...)
+
+parse metadata after the stuff.
+
+validate graph at the end: check if start_hub and end_hub exist.
+
+20/8/2026 - started work on parser.
+
+7/9/2026 - FINALLY FINISHED THE FUCKING parser
+
+concurrency thing: drone b may consider a different path is drone a is taking up time

@@ -1,0 +1,13 @@
+# Test Level 2: Testing pathfinding and errors
+nb_drones: 5
+
+start_hub: start 0 0 [color=green]
+hub: waypoint1 1 0 [color=blue max_drones=2]
+hub: waypoint2 2 0 [color=blue]
+hub: massive_rubble 3 0 [color=gray zone=blocked]
+end_hub: goal 4 0 [color=red]
+
+connection: start-waypoint1
+connection: waypoint1-waypoint2 [max_link_capacity=1]
+connection: waypoint2-massive_rubble
+connection: massive_rubble-goal

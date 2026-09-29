@@ -1,0 +1,35 @@
+# Test level 4: Testing drone rerouting
+nb_drones: 10
+
+# A path leads down two identical hallways
+start_hub: start 0 0 [color=white]
+
+# One hallway is blue
+hub: bottleneck_left 1 1 [color=blue max_drones=3]
+hub: blue_hallway1 2 1 [color=blue]
+hub: blue_hallway2 3 1 [color=blue]
+hub: blue_hallway3 4 1 [color=blue]
+
+# The other hallway is red
+hub: bottleneck_right 1 -1 [color=red max_drones=3]
+hub: red_hallway1 2 -1 [color=red]
+hub: red_hallway2 3 -1 [color=red]
+hub: red_hallway3 4 -1 [color=red]
+
+# They both join together and make purple
+end_hub: hollow 5 0 [color=purple]
+
+# Connections
+connection: start-bottleneck_left
+connection: start-bottleneck_right
+
+connection: bottleneck_left-blue_hallway1
+connection: blue_hallway1-blue_hallway2
+connection: blue_hallway2-blue_hallway3
+
+connection: bottleneck_right-red_hallway1
+connection: red_hallway1-red_hallway2
+connection: red_hallway2-red_hallway3
+
+connection: blue_hallway3-hollow
+connection: red_hallway3-hollow

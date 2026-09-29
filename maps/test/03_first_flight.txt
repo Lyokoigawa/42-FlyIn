@@ -1,0 +1,23 @@
+# Test Level 3: Testing zones behaviour
+nb_drones: 3
+
+start_hub: start_gate 0 0 [color=green]
+hub: innocent_pathway 1 0 [color=blue max_drones=2]
+hub: temptation_fork 2 0 [color=blue]
+hub: maliciously_misplaced_crate 3 0 [color=brown zone=blocked]
+hub: delicious_cake 4 0 [color=pink zone=priority]
+hub: regretful_hallway 2 1 [color=gray zone=restricted]
+end_hub: end_gate 2 2 [color=red]
+
+# Starting off good...
+connection: start_gate-innocent_pathway
+# Uh oh...
+connection: innocent_pathway-temptation_fork [max_link_capacity=1]
+# NOOOOOOOOOO
+connection: temptation_fork-maliciously_misplaced_crate
+# THIS IS JUST EVIL
+connection: maliciously_misplaced_crate-delicious_cake
+# OH YEAH AND YOU'LL JUST LET THEM WATCH WON'T YOU?
+connection: temptation_fork-regretful_hallway
+# You're a sick and twisted individual you know that?
+connection: regretful_hallway-end_gate
