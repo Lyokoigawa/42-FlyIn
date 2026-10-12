@@ -21,13 +21,13 @@ class Visual_Hub:
             self.calc_color()
             self.body.fill(self.color, special_flags=pygame.BLEND_MULT)
         if self.hub.zone == "blocked":
-            self.border = pygame.image.load("assets/hub/border/blocked_border.png")
+            self.border = pygame.image.load("assets/hub/border/blocked.png")
         elif self.hub.zone == "restricted":
-            self.border = pygame.image.load("assets/hub/border/restricted_border.png")
+            self.border = pygame.image.load("assets/hub/border/restricted.png")
         elif self.hub.zone == "normal":
-            self.border = pygame.image.load("assets/hub/border/normal_border.png")
+            self.border = pygame.image.load("assets/hub/border/normal.png")
         else:
-            self.border = None
+            self.border = None  # type: ignore[assignment]
         self.base.blit(self.body, (0, 0))
         if self.border is not None:
             self.base.blit(self.border, (0, 0))
@@ -136,7 +136,7 @@ class Visual_Drone:
 
 
 def hub_drone_count(turn: dict[str, str]) -> dict[str, list[str]]:
-    hubs = {hub: list() for hub in turn.values()}
+    hubs: dict[str, list[str]] = {hub: list() for hub in turn.values()}
     for drone, hub in turn.items():
         hubs[hub].append(drone)
     return hubs
@@ -211,8 +211,8 @@ def run(map: Graph, history: list[dict[str, str]]) -> None:
         v_hubs.append(n_hub)
     v_drones: list[Visual_Drone] = []
     for drone, hub_name in history[turn].items():
-        hub = find_hub(hub_name, v_hubs)
-        n_drone = Visual_Drone(drone, hub)
+        hub2 = find_hub(hub_name, v_hubs)
+        n_drone = Visual_Drone(drone, hub2)
         n_drone.load_sprite(size)
         v_drones.append(n_drone)
 
@@ -231,12 +231,12 @@ def run(map: Graph, history: list[dict[str, str]]) -> None:
                                                           scale)
                 for v_drone in v_drones:
                     scale = v_drone.calc_scale(size)
-                    hub = history[turn][v_drone.id]
-                    if "-" in hub:
-                        hub = connection_center(hub, v_hubs)
+                    hub3 = history[turn][v_drone.id]
+                    if "-" in hub3:
+                        hub4 = connection_center(hub3, v_hubs)
                     else:
-                        hub = find_hub(hub, v_hubs).center
-                    v_drone.target(hub[0], hub[1])
+                        hub4 = find_hub(hub3, v_hubs).center
+                    v_drone.target(hub4[0], hub4[1])
                     v_drone.sprite = pygame.transform.scale(v_drone.base,
                                                             scale)
                 font = pygame.font.SysFont(None, int(size) - 1)
@@ -278,7 +278,6 @@ def run(map: Graph, history: list[dict[str, str]]) -> None:
             screen.blit(hub_text, v_hub.name_pos(size, hub_text))
         for v_drone in v_drones:
             drone_text = font.render(v_drone.id, True, [0, 0, 0])
-            # pygame.draw.circle(screen, v_drone.color, v_drone.center, size * 0.9)
             screen.blit(v_drone.sprite, v_drone.sprite_pos())
             if v_drone.reached():
                 v_drone.update_pos([v_drone.target_x, v_drone.target_y])
