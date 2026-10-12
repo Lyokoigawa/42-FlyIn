@@ -116,7 +116,9 @@ class Drone:
         elif self.state == Drone_States.AT_HUB:
             if next.curr_drones < next.max_drones:
                 if next.zone == "restricted":
-                    if conn.curr_link < conn.max_link:
+                    if (conn.curr_link < conn.max_link and
+                            conn.curr_link + next.curr_drones <
+                            next.max_drones):
                         self.en_route(next, conn)
                         return f"{self.id}-{conn.get_name(self.curr_hub,
                                                           next)}"
@@ -128,7 +130,9 @@ class Drone:
         elif self.state == Drone_States.ASLEEP:
             if next.curr_drones < next.max_drones:
                 if next.zone == "restricted":
-                    if conn.curr_link < conn.max_link:
+                    if (conn.curr_link < conn.max_link and
+                            conn.curr_link + next.curr_drones <
+                            next.max_drones):
                         self.en_route(next, conn)
                         return f"{self.id}-{conn.get_name(self.curr_hub,
                                                           next)}"

@@ -68,7 +68,7 @@ class FlyInParser:
         valid_color = ["red", "yellow", "blue", "orange", "green", "purple",
                        "white", "gray", "black", "cyan", "brown", "lime",
                        "magenta", "gold", "maroon", "darkred", "crimson",
-                       "violet", "pink", "rainbow"]
+                       "violet", "pink", "rainbow", "lightblue"]
         cur_data: dict[str, Union[str | int]] = {}
         try:
             if meta_data[-1].startswith("[") and meta_data[-1].endswith("]"):

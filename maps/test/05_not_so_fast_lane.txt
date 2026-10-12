@@ -1,0 +1,62 @@
+# Test level 5: Further testing of zone + multiple drone behaviour
+nb_drones: 20
+
+# The initial "most direct" path:
+start_hub: start 0 0 [color=yellow]
+hub: fat_lane1 1 0 [color=crimson max_drones=5 zone=restricted]
+# hub: fat_lane2 2 0 [color=crimson]
+hub: fat_lane3 4 0 [color=crimson zone=restricted]
+
+# The finish line is in sight
+end_hub: end 6 0 [color=green]
+
+# Branching paths appear before the uninitiated
+hub: low_lane1 1 -1 [color=pink max_drones=5]
+hub: low_lane2 2 -1 [color=pink]
+hub: low_lane3 3 -1 [color=pink]
+hub: low_lane4 4 -1 [color=pink]
+hub: low_lane5 5 -1 [color=pink]
+
+hub: glow_lane1 1 -2 [color=lightblue max_drones=5]
+hub: glow_lane2 2 -2 [color=lightblue]
+hub: glow_lane3 3 -2 [color=lightblue]
+hub: glow_lane4 4 -2 [color=lightblue]
+hub: glow_lane5 5 -2 [color=lightblue]
+
+hub: slow_lane1 1 -3 [color=white max_drones=5]
+hub: slow_lane2 2 -3 [color=white]
+hub: slow_lane3 3 -3 [color=white]
+hub: slow_lane4 4 -3 [color=white]
+hub: slow_lane5 5 -3 [color=white]
+
+# Connections connections...
+
+# Fat lane
+connection: start-fat_lane1 [max_link_capacity=5]
+# connection: fat_lane1-fat_lane2
+connection: fat_lane1-fat_lane3
+connection: fat_lane3-end
+
+# Low lane
+connection: start-low_lane1 [max_link_capacity=5]
+connection: low_lane1-low_lane2
+connection: low_lane2-low_lane3
+connection: low_lane3-low_lane4
+connection: low_lane4-low_lane5
+connection: low_lane5-end
+
+# Glow lane
+connection: start-glow_lane1 [max_link_capacity=5]
+connection: glow_lane1-glow_lane2
+connection: glow_lane2-glow_lane3
+connection: glow_lane3-glow_lane4
+connection: glow_lane4-glow_lane5
+connection: glow_lane5-end
+
+# Slow lane
+connection: start-slow_lane1 [max_link_capacity=5]
+connection: slow_lane1-slow_lane2
+connection: slow_lane2-slow_lane3
+connection: slow_lane3-slow_lane4
+connection: slow_lane4-slow_lane5
+connection: slow_lane5-end

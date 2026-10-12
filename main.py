@@ -1,7 +1,6 @@
 from src.parser import FlyInParser
 from src.graph import Graph
 from src.drone import DroneSystem
-from src.visuals import run
 import argparse
 
 
@@ -20,7 +19,14 @@ def main() -> None:
     drones = DroneSystem(parsed_map.configs["nb_drones"], fly_in_map)
     history = drones.simulate(drones)
     if map.visual == 1:
-        run(fly_in_map, history)
+        try:
+            from src.visuals import run
+            run(fly_in_map, history)
+        except ModuleNotFoundError as e:
+            print(f"WARNING: {repr(e.name)} module not found.")
+            if e.name == "pygame":
+                print("Please run 'make install'... I've prepared a whole venv"
+                      " for you to play around with pygame in and stuff...")
 
 
 if __name__ == "__main__":
