@@ -9,13 +9,31 @@ parse_int = re.compile(r".*[^0-9-]")
 
 
 class FlyInParser:
+    """Parse a txt file into dicts and lists that can be used by the program.
+
+    
+    """
     def __init__(self, map_name: str) -> None:
+        """Initialize the FlyInParser class.
+
+        Args:
+            map_name - filepath of the map to parse.
+        """
         self.map = map_name
         self.configs: dict[str, Any] = {}
         self.nodes: dict[str, tuple[tuple[int, int], str]] = {}
         self.connections: list[list[str]] = []
 
     def parse_hub(self, hub_data: list[str], line_id: int) -> None:
+        """Parse "hub:" lines in the map file
+
+        Args:
+            hub_data - list of strings containing the hub's data.
+            line_id - file line number for indexing errors.
+
+        Raises:
+            ValueError - When either the name is empty, contains
+        """
         hub_data[0] = hub_data[0].strip(":")
         try:
             if hub_data[0] == "start_hub" or hub_data[0] == "end_hub":

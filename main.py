@@ -5,6 +5,18 @@ import argparse
 
 
 def main() -> None:
+    """Parse the given map, build it, then run an algorithm.
+
+    Runs a quick simulation of a fleet of drones through a given map in
+    --map in order to find the cheapest path from start to end in the map.
+    It first parses the map and then it gives it to the builder in order
+    to build the map then finally passing it to the algorithm, where it will
+    calculate the cheapest path and run the drones through it.
+    Rerouting if needed.
+    Optionally runs visualizer using pygame with --visual in order to help
+    understand each move better.
+    """
+
     def_map = "maps/easy/01_linear_path.txt"
     args = argparse.ArgumentParser()
     args.add_argument("--map", type=str, default=def_map,

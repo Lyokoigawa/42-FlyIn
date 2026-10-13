@@ -120,8 +120,8 @@ class Drone:
                             conn.curr_link + next.curr_drones <
                             next.max_drones):
                         self.en_route(next, conn)
-                        return f"{self.id}-{conn.get_name(self.curr_hub,
-                                                          next)}"
+                        return (f"{self.id}-"
+                                f"{conn.get_name(self.curr_hub, next)}")
                     else:
                         return Blocked.CONN_FULL
                 else:
@@ -134,8 +134,8 @@ class Drone:
                             conn.curr_link + next.curr_drones <
                             next.max_drones):
                         self.en_route(next, conn)
-                        return f"{self.id}-{conn.get_name(self.curr_hub,
-                                                          next)}"
+                        return (f"{self.id}-"
+                                f"{conn.get_name(self.curr_hub, next)}")
                     else:
                         return Blocked.IS_ASLEEP
                 else:
