@@ -4,19 +4,43 @@ from .graph import Graph
 
 
 class Drone_States(Enum):
+    """Represents the operational states of a drone in the system."""
+
     AT_HUB = "at_hub"
     EN_ROUTE = "en_route"
     ASLEEP = "asleep"
 
 
 class Blocked(Enum):
+    """Indicates reasons why a drone's movement step failed."""
+
     HUB_FULL = "hub_full"
     CONN_FULL = "conn_full"
     IS_ASLEEP = "is_asleep"
 
 
 class DroneSystem:
+    """Manages and simulates a multi-drone routing and navigation system.
+
+    Initializes a fleet of drones, computes initial paths across a graph
+    network, and handles step-by-step turn simulations, including dynamic
+    rerouting when connections are blocked.
+
+    Attributes:
+        nb_drones (int): The number of drones in the system.
+        turns (int): Counter tracking total simulation turns executed.
+        map (Graph): The graph representing hubs and connections.
+        drones (list[Drone]): List of active drone instances in fleet.
+    """
+
     def __init__(self, nb_drones: int, map: Graph) -> None:
+        """Initializes system and calculates initial paths for drones.
+
+        Args:
+            nb_drones (int): Total number of drones to initialize.
+            map (Graph): Graph containing start hub, end destination,
+                and network connections.
+        """
         self.nb_drones = nb_drones
         self.turns = 0
         self.map = map
@@ -28,6 +52,19 @@ class DroneSystem:
 
     @staticmethod
     def simulate(dro: "DroneSystem") -> list[dict[str, str]]:
+        """Simulates turn-by-turn drone movement to destinations.
+
+        Each turn, drones attempt to move to their next path node. If
+        blocked, dynamic rerouting is evaluated, adopting new paths
+        only if cost is lower than remaining original path cost.
+
+        Args:
+            dro (DroneSystem): System instance to simulate.
+
+        Returns:
+            list[dict[str, str]]: Chronological history of frames mapping
+            drone IDs to hub names or connection strings.
+        """
         i = 0
         frame: dict[str, str] = {}
         for drone in dro.drones:
@@ -77,7 +114,30 @@ class DroneSystem:
 
 
 class Drone:
+    """Represents an autonomous drone navigating between hubs in a graph map.
+
+    Tracks the drone's spatial location, operational state, path, and ID,
+    while providing methods to transition states and move along connections.
+
+    Attributes:
+        id (str): Unique identifier formatted as "D{id}".
+        state (Drone_States): Current operational state of the drone.
+        curr_hub (Hub): The hub the drone is currently located at or left.
+        x (float | int): Current x-coordinate location.
+        y (float | int): Current y-coordinate location.
+        destination (Hub): The target destination hub.
+        idle (int): Counter for turns spent idling.
+        path (list[Hub]): Planned path of hubs to reach the destination.
+    """
+
     def __init__(self, id: int, start_hub: Hub, end_hub: Hub) -> None:
+        """Initializes a Drone with start/destination hubs and initial state.
+
+        Args:
+            id (int): Numerical ID converted to formatted string (e.g., "D1").
+            start_hub (Hub): The initial starting hub.
+            end_hub (Hub): The final target hub.
+        """
         self.id = f"D{id}"
         self.state = Drone_States.ASLEEP
         self.curr_hub = start_hub
@@ -87,6 +147,15 @@ class Drone:
         self.idle = 0
 
     def move(self, next: Hub, conn: Connection) -> None:
+        """Moves drone from current hub to adjacent hub via connection.
+
+        Updates node occupancy counts, connection usage counters, and
+        drone coordinates.
+
+        Args:
+            next (Hub): Target destination hub.
+            conn (Connection): Connection used to transition hubs.
+        """
         self.curr_hub.curr_drones -= 1
         next.curr_drones += 1
         conn.curr_link += 1
@@ -95,9 +164,24 @@ class Drone:
         self.y = next.y
 
     def path_find(self, map: Graph) -> None:
+        """Calculates and stores optimal path from graph start to destination.
+
+        Args:
+            map (Graph): Graph instance providing pathfinding retrace logic.
+        """
         self.path = map.retrace_steps(map.end)
 
     def en_route(self, target: Hub, conn: Connection) -> None:
+        """Toggles or advances en-route state and updates location metrics.
+
+        If not currently en route, enters en-route state and departs current
+        hub. If already en route, completes traversal and arrives at
+        target hub.
+
+        Args:
+            target (Hub): Target hub being traveled to.
+            conn (Connection): Connection being traversed.
+        """
         if self.state != Drone_States.EN_ROUTE:
             self.state = Drone_States.EN_ROUTE
             self.curr_hub.curr_drones -= 1
@@ -111,6 +195,19 @@ class Drone:
             self.curr_hub = target
 
     def go_to(self, next: Hub, conn: Connection) -> str | Blocked:
+        """Attempts to move drone to next hub based on state and limits.
+
+        Evaluates target hub capacity, link capacity, and restricted zone
+        rules before executing movement or returning blockage status.
+
+        Args:
+            next (Hub): Next target hub in planned path.
+            conn (Connection): Connection leading to target hub.
+
+        Returns:
+            str | Blocked: Movement description string on success, or a
+            Blocked enum indicating why movement failed.
+        """
         if self.state == Drone_States.EN_ROUTE:
             if next.curr_drones < next.max_drones:
                 self.en_route(next, conn)

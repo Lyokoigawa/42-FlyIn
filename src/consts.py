@@ -1,3 +1,9 @@
+"""Global constants and configuration lookup tables for the Drone Visualizer.
+
+This module provides hex color values, random taglines, sprite assets,
+and RGB drone color palettes.
+"""
+
 COLOR_HEX: dict[str, str] = {
     "red": "#FF0000",
     "yellow": "#FFFF00",

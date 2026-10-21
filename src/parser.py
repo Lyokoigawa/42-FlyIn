@@ -9,15 +9,25 @@ parse_int = re.compile(r".*[^0-9-]")
 
 
 class FlyInParser:
-    """Parse a txt file into dicts and lists that can be used by the program.
+    """Parses map configuration text files into structured graph data.
 
-    
+    Reads plain-text map files to extract configuration parameters, hub
+    coordinates, metadata settings, and connection paths used for drone
+    navigation and simulation.
+
+    Attributes:
+        map (str): Filepath of the target map text file to parse.
+        configs (dict[str, Any]): Parsed key-value metadata configuration.
+        nodes (dict[str, tuple[tuple[int, int], str]]): Parsed hub nodes mapped
+            to coordinate tuples and node type identifiers.
+        connections (list[list[str]]): List of valid hub connection pairs.
     """
+
     def __init__(self, map_name: str) -> None:
-        """Initialize the FlyInParser class.
+        """Initializes the FlyInParser instance with a target map filepath.
 
         Args:
-            map_name - filepath of the map to parse.
+            map_name (str): Filepath of the map file to parse.
         """
         self.map = map_name
         self.configs: dict[str, Any] = {}
@@ -25,15 +35,15 @@ class FlyInParser:
         self.connections: list[list[str]] = []
 
     def parse_hub(self, hub_data: list[str], line_id: int) -> None:
-        """Parse "hub:" lines in the map file
+        """Parses 'hub:' entries in the map file.
 
         Args:
-            hub_data - list of strings containing the data to parse.
-            line_id - file line number for indexing errors.
+            hub_data (list[str]): List of parsed string tokens for a hub.
+            line_id (int): File line index used for reporting errors.
 
         Raises:
-            ValueError - When either the name is empty, contains '-' or
-            when int values aren't passed as int.
+            ValueError: If hub name is invalid/empty, duplicate start or end
+                hubs are found, or coordinates are non-integer values.
         """
         hub_data[0] = hub_data[0].strip(":")
         try:
@@ -66,14 +76,15 @@ class FlyInParser:
             sys.exit(f"ERROR in line {line_id + 1}: {e}.")
 
     def parse_connection(self, con_data: list[str], line_id: int) -> None:
-        """Parse "connection:" lines in the map file
+        """Parses 'connection:' entries in the map file.
 
         Args:
-            con_data - list of strings containing the data to parse.
-            line_id - file line number for indexing errors.
+            con_data (list[str]): Parsed tokens for connection data.
+            line_id (int): File line index used for reporting errors.
 
         Raises:
-            ValueError - When the connection was already parsed before.
+            ValueError: If a node connects to itself, connects unknown hubs,
+                or repeats an existing connection path.
         """
         try:
             if con_data[1] == con_data[2]:
@@ -93,22 +104,15 @@ class FlyInParser:
             sys.exit(f"ERROR in line {line_id + 1}: {e}.")
 
     def parse_hub_metadata(self, meta_data: list[str], line_id: int) -> None:
-        """Parse "hub:" metadata in between square brackets
-
-        Parses the data in between the square brackets for each Hub. Can
-        parse either 'zone', 'max_drones' or 'color'.
+        """Parses bracketed hub metadata ('zone', 'max_drones', 'color').
 
         Args:
-            meta_data - list of strings containing the metadata to parse.
-            line_id - file line number for indexing errors.
+            meta_data (list[str]): Parsed tokens containing bracketed metadata.
+            line_id (int): File line index used for reporting errors.
 
         Raises:
-            ValueError - When any of the metadata values parses incorrectly.
-            Specifically, when max_drones isn't a positive integer, when
-            zone isn't in the list of valid zone types or when color isn't
-            in the list of valid colors.
-            Also raises when it finds the same metadata twice, or if it finds
-            an invalid key.
+            ValueError: If metadata key is unrecognized, value types fail
+                validation, or duplicate metadata keys are declared.
         """
         valid_meta = ["zone", "color", "max_drones"]
         valid_zone = ["normal", "blocked", "restricted", "priority"]
@@ -152,18 +156,16 @@ class FlyInParser:
             sys.exit(f"ERROR in line {line_id + 1}: {e}.")
 
     def parse_conn_metadata(self, meta_data: list[str], line_id: int) -> None:
-        """Parse "Connection:" metadata in square brackets
-
-        Parses the data in between square brackets for each Connection. Can
-        only parse 'max_link_capacity'.
+        """Parses bracketed connection metadata ('max_link_capacity').
 
         Args:
-            meta_data - list of strings containing the metadata to parse.
-            line_id - file line for indexing purposes.
+            meta_data (list[str]): Parsed tokens containing connection
+                metadata.
+            line_id (int): File line index used for reporting errors.
 
         Raises:
-            ValueError - When metadata name doesn't match max_link_capacity,
-            or when it's value isn't a positive integer.
+            ValueError: If attribute name is invalid or capacity limit is not a
+                positive integer.
         """
         valid_meta = "max_link_capacity"
         cur_data: dict[str, Union[str | int]] = {}
@@ -186,20 +188,17 @@ class FlyInParser:
             sys.exit(f"ERROR in line {line_id + 1}: {e}.")
 
     def read_config(self) -> None:
-        """Parse given map file line by line.
-        
-        Parses a .txt file given in self.map as the map line by line, filling
-        out 'self.config', 'self.nodes' and 'self.connections' with data from
-        the given file.
+        """Reads and parses the map configuration file line by line.
+
+        Populates internal state variables ('self.configs', 'self.nodes', and
+        'self.connections') with data extracted from the text file.
 
         Raises:
-            FileNotFoundError - When self.map doesn't exist
-            IsADirectoryError - When self.map is a directory
-            ValueError - When either 'nb_drones' appears more than once,
-            when 'nb_drones' isn't a positive integer, when it finds an
-            uncommented line that isn't either 'nb_drones', 'connection',
-            'start_hub', 'end_hub' or 'hub', or when it doesn't find neither
-            start_hub or end_hub
+            FileNotFoundError: If the target map file path does not exist.
+            IsADirectoryError: If the target map file path is a directory.
+            ValueError: If drone numbers are duplicated or non-positive, if
+                lines contain unknown directive prefixes, or if required hubs
+                are missing.
         """
         try:
             with open(self.map, "r", encoding="utf-8") as f:

@@ -2,6 +2,21 @@ from .consts import COLOR_HEX as colors
 
 
 def paint_text(text: str, color: str) -> str:
+    """Applies ANSI escape sequences to colorize text for terminal output.
+
+    Converts a color name into RGB values from a global color lookup table and
+    wraps the given string in ANSI escape codes. Supports single colors as well
+    as a special 'rainbow' cycle applied character by character.
+
+    Args:
+        text (str): String content to colorize.
+        color (str): Color identifier matching a key in the `colors` dict,
+            or 'rainbow' to cycle through rainbow ANSI colors.
+
+    Returns:
+        str: ANSI-escaped string that renders with the chosen color(s) when
+        printed to a terminal.
+    """
     if color != "rainbow":
         hex = colors[color].strip("#")
         rgb = [int(hex[i:i + 2], 16) for i in (0, 2, 4)]
