@@ -1,0 +1,9 @@
+# test level 6: The last debugging
+nb_drones: 5
+
+start_hub: beginning 0 0 [color=white]
+hub: journey 1 0 [color=lightblue max_drones=2]
+end_hub: end 2 0 [color=pink]
+
+connection: beginning-journey [max_link_capacity=2]
+connection: journey-end [max_link_capacity=2]

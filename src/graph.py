@@ -178,3 +178,7 @@ class Graph:
             if hub_a in conn and hub_b in conn:
                 return True
         return False
+
+    def reset_connections(self) -> None:
+        for conn in self.connections:
+            conn.curr_link = 0

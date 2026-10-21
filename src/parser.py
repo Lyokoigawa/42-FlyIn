@@ -28,11 +28,12 @@ class FlyInParser:
         """Parse "hub:" lines in the map file
 
         Args:
-            hub_data - list of strings containing the hub's data.
+            hub_data - list of strings containing the data to parse.
             line_id - file line number for indexing errors.
 
         Raises:
-            ValueError - When either the name is empty, contains
+            ValueError - When either the name is empty, contains '-' or
+            when int values aren't passed as int.
         """
         hub_data[0] = hub_data[0].strip(":")
         try:
@@ -65,6 +66,15 @@ class FlyInParser:
             sys.exit(f"ERROR in line {line_id + 1}: {e}.")
 
     def parse_connection(self, con_data: list[str], line_id: int) -> None:
+        """Parse "connection:" lines in the map file
+
+        Args:
+            con_data - list of strings containing the data to parse.
+            line_id - file line number for indexing errors.
+
+        Raises:
+            ValueError - When the connection was already parsed before.
+        """
         try:
             if con_data[1] == con_data[2]:
                 raise ValueError(f"{con_data[1]} cannot connect to itself")
@@ -76,11 +86,30 @@ class FlyInParser:
             for v in self.connections:
                 if curr_con == v[::-1]:
                     raise ValueError("Roundabout connections not allowed.")
+                elif curr_con == v:
+                    raise ValueError("Connection already exists.")
             self.connections.append(curr_con)
         except ValueError as e:
             sys.exit(f"ERROR in line {line_id + 1}: {e}.")
 
     def parse_hub_metadata(self, meta_data: list[str], line_id: int) -> None:
+        """Parse "hub:" metadata in between square brackets
+
+        Parses the data in between the square brackets for each Hub. Can
+        parse either 'zone', 'max_drones' or 'color'.
+
+        Args:
+            meta_data - list of strings containing the metadata to parse.
+            line_id - file line number for indexing errors.
+
+        Raises:
+            ValueError - When any of the metadata values parses incorrectly.
+            Specifically, when max_drones isn't a positive integer, when
+            zone isn't in the list of valid zone types or when color isn't
+            in the list of valid colors.
+            Also raises when it finds the same metadata twice, or if it finds
+            an invalid key.
+        """
         valid_meta = ["zone", "color", "max_drones"]
         valid_zone = ["normal", "blocked", "restricted", "priority"]
         valid_color = ["red", "yellow", "blue", "orange", "green", "purple",
@@ -123,6 +152,19 @@ class FlyInParser:
             sys.exit(f"ERROR in line {line_id + 1}: {e}.")
 
     def parse_conn_metadata(self, meta_data: list[str], line_id: int) -> None:
+        """Parse "Connection:" metadata in square brackets
+
+        Parses the data in between square brackets for each Connection. Can
+        only parse 'max_link_capacity'.
+
+        Args:
+            meta_data - list of strings containing the metadata to parse.
+            line_id - file line for indexing purposes.
+
+        Raises:
+            ValueError - When metadata name doesn't match max_link_capacity,
+            or when it's value isn't a positive integer.
+        """
         valid_meta = "max_link_capacity"
         cur_data: dict[str, Union[str | int]] = {}
         try:
@@ -144,6 +186,21 @@ class FlyInParser:
             sys.exit(f"ERROR in line {line_id + 1}: {e}.")
 
     def read_config(self) -> None:
+        """Parse given map file line by line.
+        
+        Parses a .txt file given in self.map as the map line by line, filling
+        out 'self.config', 'self.nodes' and 'self.connections' with data from
+        the given file.
+
+        Raises:
+            FileNotFoundError - When self.map doesn't exist
+            IsADirectoryError - When self.map is a directory
+            ValueError - When either 'nb_drones' appears more than once,
+            when 'nb_drones' isn't a positive integer, when it finds an
+            uncommented line that isn't either 'nb_drones', 'connection',
+            'start_hub', 'end_hub' or 'hub', or when it doesn't find neither
+            start_hub or end_hub
+        """
         try:
             with open(self.map, "r", encoding="utf-8") as f:
                 lines = f.readlines()
@@ -154,7 +211,7 @@ class FlyInParser:
 
         try:
             for line_id, line in enumerate(lines):
-                if line.startswith("nb_drones"):
+                if line.startswith("nb_drones:"):
                     if "nb_drones" in self.configs.keys():
                         raise ValueError("Duplicate line. Only 1 'nb_drone' "
                                          "allowed")
@@ -167,22 +224,22 @@ class FlyInParser:
                         raise ValueError(f"{nb_drones[1]} is not a "
                                          "positive integer.")
                     self.configs.update({"nb_drones": int(nb_drones[1])})
-                elif line.startswith("hub"):
+                elif line.startswith("hub:"):
                     line = line.strip("\n")
                     hub_data = line.split(" ", 4)
                     self.parse_hub(hub_data, line_id)
                     self.parse_hub_metadata(hub_data, line_id)
-                elif line.startswith("start_hub"):
+                elif line.startswith("start_hub:"):
                     line = line.strip("\n")
                     hub_data = line.split(" ", 4)
                     self.parse_hub(hub_data, line_id)
                     self.parse_hub_metadata(hub_data, line_id)
-                elif line.startswith("end_hub"):
+                elif line.startswith("end_hub:"):
                     line = line.strip("\n")
                     hub_data = line.split(" ", 4)
                     self.parse_hub(hub_data, line_id)
                     self.parse_hub_metadata(hub_data, line_id)
-                elif line.startswith("connection"):
+                elif line.startswith("connection:"):
                     line = line.strip("\n")
                     con_data = line.replace("-", " ").split(" ")
                     self.parse_connection(con_data, line_id)
@@ -201,21 +258,3 @@ class FlyInParser:
                 raise ValueError("Missing end_hub")
         except ValueError as e:
             sys.exit(f"ERROR in line {line_id + 1}: {e}.")
-
-    def print_configs(self) -> None:
-        print(self.configs)
-
-    def print_nodes(self) -> None:
-        for k, v in self.nodes.items():
-            node = f"Hub name: {k} - Coordinates: {v[0:2]}"
-            if k in self.configs.keys():
-                node += f" [{self.configs.get(k)}]"
-            print(node)
-
-    def print_connections(self) -> None:
-        for con in self.connections:
-            conn = str(con)
-            meta_check = str(con[0] + " " + con[1])
-            if meta_check in self.configs.keys():
-                conn += " " + str(self.configs.get(meta_check))
-            print(conn)

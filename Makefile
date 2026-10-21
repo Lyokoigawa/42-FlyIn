@@ -1,5 +1,5 @@
 PIP_INSTALL = flyin/bin/pip install
-PYTHON = flyin/bin/python3
+PYTHON = flyin/bin/python3.12
 
 MYPY_FLAGS = --warn-return-any --warn-unused-ignores \
 		--ignore-missing-imports --disallow-untyped-defs \
@@ -8,7 +8,7 @@ MYPY_FLAGS = --warn-return-any --warn-unused-ignores \
 RM = rm -rf
 
 install:
-	python3 -m venv flyin
+	python3.12 -m venv flyin
 	$(PIP_INSTALL) --upgrade pip
 	$(PIP_INSTALL) flake8
 	$(PIP_INSTALL) mypy

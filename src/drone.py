@@ -70,6 +70,7 @@ class DroneSystem:
             dro.turns += 1
             if turn:
                 print(turn.strip(" "))
+            dro.map.reset_connections()
         print()
         print(f"Total turns: {dro.turns}")
         return history
@@ -85,9 +86,10 @@ class Drone:
         self.destination = end_hub
         self.idle = 0
 
-    def move(self, next: Hub) -> None:
+    def move(self, next: Hub, conn: Connection) -> None:
         self.curr_hub.curr_drones -= 1
         next.curr_drones += 1
+        conn.curr_link += 1
         self.curr_hub = next
         self.x = next.x
         self.y = next.y
@@ -125,8 +127,11 @@ class Drone:
                     else:
                         return Blocked.CONN_FULL
                 else:
-                    self.move(next)
-                    return f"{self.id}-{next}"
+                    if (conn.curr_link < conn.max_link):
+                        self.move(next, conn)
+                        return f"{self.id}-{next}"
+                    else:
+                        return Blocked.CONN_FULL
         elif self.state == Drone_States.ASLEEP:
             if next.curr_drones < next.max_drones:
                 if next.zone == "restricted":
@@ -139,9 +144,12 @@ class Drone:
                     else:
                         return Blocked.IS_ASLEEP
                 else:
-                    self.state = Drone_States.AT_HUB
-                    self.move(next)
-                    return f"{self.id}-{next}"
+                    if (conn.curr_link < conn.max_link):
+                        self.state = Drone_States.AT_HUB
+                        self.move(next, conn)
+                        return f"{self.id}-{next}"
+                    else:
+                        return Blocked.IS_ASLEEP
             else:
                 return Blocked.IS_ASLEEP
         return Blocked.HUB_FULL

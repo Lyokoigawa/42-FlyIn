@@ -20,8 +20,8 @@ hub: red_hallway3 4 -1 [color=red]
 end_hub: hollow 5 0 [color=purple]
 
 # Connections
-connection: start-bottleneck_left
-connection: start-bottleneck_right
+connection: start-bottleneck_left [max_link_capacity=3]
+connection: start-bottleneck_right [max_link_capacity=3]
 
 connection: bottleneck_left-blue_hallway1
 connection: blue_hallway1-blue_hallway2
