@@ -56,17 +56,19 @@ class FlyInParser:
             if not hub_name.search(hub_data[1]):
                 raise ValueError(f"{hub_data[1]} is not a valid hub name")
             if parse_int.search(hub_data[2]) or parse_int.search(hub_data[3]):
-                raise ValueError(f"ERROR in line {line_id}: "
-                                 f"({hub_data[2]}, {hub_data[3]}) are invalid "
+                raise ValueError(f"({hub_data[2]}, {hub_data[3]}) are invalid "
                                  "coordiantes")
+            for hub in self.nodes.keys():
+                if hub == hub_data[1]:
+                    raise ValueError("Duplicate hub name found")
             n_node = {hub_data[1]: [[int(hub_data[2]),
                                     int(hub_data[3])],
                                     hub_data[0]]}
             for k, v in self.nodes.items():
                 node_value = n_node.get(hub_data[1])
                 if (node_value is not None and
-                        v[0] == node_value[0][0] and
-                        v[1] == node_value[0][1]):
+                        v[0][0] == node_value[0][0] and
+                        v[0][1] == node_value[0][1]):
                     curr_item = dict({k: v})
                     raise ValueError(f"ERROR in line {line_id}: "
                                      f"{n_node} must be in a "
@@ -240,7 +242,7 @@ class FlyInParser:
                     self.parse_hub_metadata(hub_data, line_id)
                 elif line.startswith("connection:"):
                     line = line.strip("\n")
-                    con_data = line.replace("-", " ").split(" ")
+                    con_data = line.replace("-", " ", 1).split(" ")
                     self.parse_connection(con_data, line_id)
                     self.parse_conn_metadata(con_data, line_id)
                 elif line.startswith("#") or line == "\n":
